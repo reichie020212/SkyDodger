@@ -1,0 +1,28 @@
+# CCB local provider session state
+.ccb/
+
+# OS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Node / Next.js (ahead of scaffolding)
+node_modules/
+.next/
+out/
+dist/
+build/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
