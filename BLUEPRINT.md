@@ -134,11 +134,12 @@
 - **Server Actions vs API.** Score submission stays an API route (per spec). Profile updates can be Server Actions for ergonomics.
 - **NextAuth v5 helper.** Use `auth()` in Server Components, `useSession()` in Client Components. `NEXTAUTH_URL` must be set in every environment.
 
-## Open questions for Red
+## Decisions (locked by Red)
 
-1. **`avatarHue` editing.** Editable by the user in the Profile screen, or randomized once at signup?
-2. **`night_owl` timezone.** Server-side UTC, or compute from the user's local time (requires sending TZ offset with the score submission)?
-3. **Rate limiter backend.** Vercel KV (multi-region safe) or simple in-memory (MVP-only)?
+1. **`avatarHue`.** Randomized once at signup (`Math.floor(Math.random() * 360)`), **editable** by the user in the Profile screen.
+2. **`night_owl` timezone.** Server-side **UTC**. Awarded if `createdAt` UTC hour is in `[0, 5)`. (If we later want user-local, add a `tzOffsetMin` field to the score-submission contract.)
+3. **Rate limiter backend.** **In-memory leaky bucket** for MVP. Anti-cheat duration math is the real defense; serverless cold-starts make in-memory imperfect, but the cost of being bypassed by the 3s gate is bounded. Revisit Vercel KV if abuse appears.
+4. **NextAuth env naming.** **v5-native** — `AUTH_SECRET`, `AUTH_GOOGLE_ID`, `AUTH_GOOGLE_SECRET`. Update `.env.example` accordingly.
 
 ## Executor sanity-check notes (Claude)
 
