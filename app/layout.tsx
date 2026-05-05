@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { TopBar } from "@/components/TopBar";
 import { Footer } from "@/components/Footer";
+import { ADSENSE_CLIENT } from "@/lib/adsense";
 import "./sky-dodger.css";
 import "./globals.css";
 
@@ -36,6 +38,14 @@ export default function RootLayout({
           <main className="page">{children}</main>
           <Footer />
         </div>
+        {ADSENSE_CLIENT && (
+          <Script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+            strategy="afterInteractive"
+            crossOrigin="anonymous"
+          />
+        )}
       </body>
     </html>
   );

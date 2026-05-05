@@ -1,7 +1,12 @@
-// Placeholder AdSlot. Phase 6 replaces the body with real
-// `<ins class="adsbygoogle">` units and the loader script. The dev
-// fallback (rendered now) shows the slot kind + size so layouts can be
-// designed against it before AdSense is wired.
+"use client";
+
+import { useEffect, useRef } from "react";
+import {
+  AD_META,
+  ADSENSE_CLIENT,
+  adsConfigured,
+  slotIdFor,
+} from "@/lib/adsense";
 
 export type AdKind =
   | "leaderboard"
@@ -11,23 +16,13 @@ export type AdKind =
   | "interstitial"
   | "banner-mobile";
 
-const SIZE_LABEL: Record<AdKind, string> = {
-  leaderboard: "728 × 90",
-  rectangle: "300 × 250",
-  skyscraper: "160 × 600",
-  native: "In-feed native",
-  interstitial: "300 × 250",
-  "banner-mobile": "320 × 100",
-};
+declare global {
+  interface Window {
+    adsbygoogle?: object[];
+  }
+}
 
-const CLASS_FOR: Record<AdKind, string> = {
-  leaderboard: "ad-leaderboard",
-  rectangle: "ad-rectangle",
-  skyscraper: "ad-skyscraper",
-  native: "ad-native",
-  interstitial: "ad-interstitial",
-  "banner-mobile": "ad-banner-mobile",
-};
+const AD_LABEL = "Advertisement";
 
 export function AdSlot({
   kind = "leaderboard",
@@ -36,19 +31,85 @@ export function AdSlot({
   kind?: AdKind;
   label?: string;
 }) {
+  const meta = AD_META[kind];
+  const configured = adsConfigured(kind);
+  const slotId = slotIdFor(kind);
+  const insRef = useRef<HTMLModElement | null>(null);
+
+  useEffect(() => {
+    if (!configured) return;
+    try {
+      (window.adsbygoogle = window.adsbygoogle ?? []).push({});
+    } catch {
+      /* swallow — AdSense will retry on next page navigation */
+    }
+  }, [configured, kind]);
+
+  if (!configured) {
+    return (
+      <div
+        className="ad-wrap"
+        style={{ margin: "0 auto", width: "fit-content", maxWidth: "100%" }}
+      >
+        <div
+          style={{
+            fontSize: 9,
+            textTransform: "uppercase",
+            letterSpacing: "0.08em",
+            color: "var(--ink-3)",
+            marginBottom: 4,
+            textAlign: "center",
+          }}
+        >
+          {AD_LABEL}
+        </div>
+        <div className={"ad-slot " + meta.cls}>
+          <div style={{ textAlign: "center", lineHeight: 1.4 }}>
+            {label ?? `Google AdSense · ${meta.sizeLabel}`}
+            <div style={{ fontSize: 9, opacity: 0.65, marginTop: 4 }}>
+              placeholder · set NEXT_PUBLIC_ADSENSE_CLIENT and the per-kind slot
+              ID to enable
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const insStyle: React.CSSProperties = {
+    display: "block",
+    ...(meta.width ? { width: meta.width } : {}),
+    ...(meta.height ? { height: meta.height } : {}),
+  };
+
   return (
     <div
       className="ad-wrap"
       style={{ margin: "0 auto", width: "fit-content", maxWidth: "100%" }}
     >
-      <div className={"ad-slot " + CLASS_FOR[kind]}>
-        <div style={{ textAlign: "center", lineHeight: 1.4 }}>
-          {label ?? `Google AdSense · ${SIZE_LABEL[kind]}`}
-          <div style={{ fontSize: 9, opacity: 0.65, marginTop: 4 }}>
-            placeholder · Phase 6 wires real adsbygoogle
-          </div>
-        </div>
+      <div
+        style={{
+          fontSize: 9,
+          textTransform: "uppercase",
+          letterSpacing: "0.08em",
+          color: "var(--ink-3)",
+          marginBottom: 4,
+          textAlign: "center",
+        }}
+      >
+        {AD_LABEL}
       </div>
+      <ins
+        ref={insRef}
+        className={"adsbygoogle " + meta.cls}
+        style={insStyle}
+        data-ad-client={ADSENSE_CLIENT}
+        data-ad-slot={slotId}
+        data-ad-format={meta.format}
+        data-full-width-responsive={
+          meta.fullWidthResponsive ? "true" : undefined
+        }
+      />
     </div>
   );
 }
