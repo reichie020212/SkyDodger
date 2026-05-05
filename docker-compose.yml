@@ -1,0 +1,29 @@
+# Local Postgres for development. Use:
+#   docker compose up -d
+#   pnpm prisma migrate dev --name init
+#   pnpm prisma db seed
+#
+# Connection string for .env.local:
+#   postgres://postgres:dev@localhost:5432/skydodger
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: sky-dodger-pg
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: skydodger
+    ports:
+      - "5432:5432"
+    volumes:
+      - sd-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d skydodger"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  sd-pg-data:

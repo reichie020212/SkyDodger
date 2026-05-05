@@ -58,7 +58,8 @@ a difficulty, click **Start flying**, dodge the slabs.
 
 | Option | Setup |
 | ------ | ----- |
-| **Docker** | `docker run --name sd-pg -e POSTGRES_PASSWORD=dev -p 5432:5432 -d postgres:16` |
+| **Docker (recommended)** | `docker compose up -d` — uses the included [`docker-compose.yml`](./docker-compose.yml), which spins up Postgres 16 with a persistent volume |
+| **Docker (one-shot)** | `docker run --name sd-pg -e POSTGRES_PASSWORD=dev -p 5432:5432 -d postgres:16` |
 | **Postgres.app** (macOS) | Install from <https://postgresapp.com>, then `createdb skydodger` |
 | **Homebrew** (macOS) | `brew install postgresql@16 && brew services start postgresql@16 && createdb skydodger` |
 | **Vercel Postgres (dev branch)** | Provision in the Vercel dashboard, copy the connection strings |
