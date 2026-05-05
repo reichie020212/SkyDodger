@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { TopBar } from "@/components/TopBar";
+import { Footer } from "@/components/Footer";
 import "./sky-dodger.css";
 import "./globals.css";
 
@@ -29,7 +31,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${spaceGrotesk.variable} ${jetBrainsMono.variable}`}>
-        {children}
+        <div className="app">
+          <TopBar />
+          <main className="page">{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   );
