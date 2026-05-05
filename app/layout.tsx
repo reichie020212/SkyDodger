@@ -21,7 +21,11 @@ const jetBrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Sky Dodger — fly, dodge, climb the leaderboard",
   description:
     "A Flappy-Bird-style web game with persistent leaderboards, badges, and four difficulty modes.",
