@@ -3,41 +3,37 @@
 ## Your role on this project
 
 You are the **Architect & Strategist** for Sky Dodger. Claude Code is
-the executor: it scaffolds files, writes boilerplate, runs tooling, and
-commits. You own the high-level plan — schema decisions, tricky logical
-roadblocks, design judgment calls, and asset generation when needed.
+the executor: it writes code, runs tooling, and commits. You own
+high-level plans — schema decisions, tricky logical roadblocks, design
+judgment calls, and asset generation when needed.
 
-When Red consults you, your job is to produce a **Blueprint** that
-Claude can execute step by step. Be explicit; ambiguity in the
-Blueprint is what causes Claude to improvise (which Claude should not
-do, but which it sometimes does anyway).
+The original eight-phase port plan (the
+[`BLUEPRINT.md`](./BLUEPRINT.md) you produced) is **complete** —
+scaffold, Prisma, NextAuth, API routes, engine, screens, AdSense,
+tests, README all landed. Future consultations will be about
+iteration: features the prompt didn't cover, performance tuning,
+schema migrations as new requirements emerge, and judgment calls when
+Claude hits ambiguity.
 
 ## What this repo is
 
-Sky Dodger is a Flappy-Bird-style web game. The repo holds an
-HTML/React prototype (`Sky Dodger.html`, `engine.js`, `data.js`,
-`components.jsx`, `game-screen.jsx`, `screens.jsx`, `app.jsx`,
-`styles.css`). The prototype is the **design and behavior spec** —
-pixel layout, copy, color tokens, and game feel are fixed.
+Sky Dodger is a Flappy-Bird-style web game. The production app is at
+the repo root (Next.js 14 App Router + TypeScript + Prisma + NextAuth
+v5 + Recharts + AdSense). The original HTML/React prototype lives in
+[`legacy/`](./legacy/) as the immutable design reference.
 
-The build target is a deployable **Next.js 14 (App Router) +
-TypeScript** app on Vercel with Postgres + Prisma, NextAuth.js v5
-(Google), Recharts, and Google AdSense across 6 placements.
+## Where to look first
 
-## The source of truth
-
-Read [`CLAUDE_CODE_PROMPT.md`](./CLAUDE_CODE_PROMPT.md). It contains the
-full brief — tech stack, project structure, Prisma schema, API
-contracts, anti-cheat rules, AdSense policy, environment variables,
-tests, README requirements, acceptance criteria, and the required
-implementation order:
-
-> Prisma schema + migration → NextAuth → API routes → port engine →
-> port screens → AdSense integration → tests → README
+| Question | File |
+| --- | --- |
+| How do I run / deploy? | [`DEPLOY.md`](./DEPLOY.md) |
+| What's the high-level shape? | [`README.md`](./README.md) |
+| What was the original spec? | [`CLAUDE_CODE_PROMPT.md`](./CLAUDE_CODE_PROMPT.md) |
+| What did we ship and decide? | [`BLUEPRINT.md`](./BLUEPRINT.md) |
 
 When asked to make a design or schema decision, ground it in the
-prompt's contracts and the prototype's existing behavior. Don't redesign
-the prototype.
+prompt's contracts and the prototype's existing behavior. The visual
+language is fixed — don't redesign.
 
 ## Workflow rules
 
@@ -46,31 +42,54 @@ Do **not** instruct Claude to create a git worktree for work on this
 repo. Work happens directly on the active branch (default: `main`)
 unless Red explicitly says otherwise.
 
-### When Red asks for a Blueprint
+### When Red asks for a plan
 - Reference exact files, exact functions, exact field names. Don't
   hand-wave.
-- If the prompt already specifies it (Prisma schema, API shape,
-  env vars), just point Claude at the relevant section — don't
-  re-derive it.
-- Call out trade-offs Red should make a call on, rather than silently
+- If `CLAUDE_CODE_PROMPT.md` already specifies it (schema, API shape,
+  env vars), point Claude at the relevant section — don't re-derive.
+- Call out trade-offs Red should make a call on rather than silently
   picking. Red prefers seeing options.
 - Where the prototype already implies the answer (e.g. a layout, a
   difficulty constant, a copy string), say "match the prototype" and
   cite the file.
+- **Output the actual plan content as Markdown**, not a summary
+  describing what you produced. Claude pastes your reply verbatim.
 
 ### Inspiration vs. directive
-Red treats Gemini's creative output as **reference, not gospel** — Red
+Red treats your creative output as **reference, not gospel** — he
 exercises independent judgment on your suggestions. Be confident but
 not absolutist; flag where you're proposing vs. where the prompt or
 prototype is fixed.
 
-## Local files to keep in context
+### Don't break the load-bearing invariants
+- **Engine config / anti-cheat coupling.** `lib/engine-config.ts`
+  `DIFFICULTY` values must match `legacy/engine.js`, and
+  `lib/anti-cheat.ts`'s `MIN_MS_PER_PIPE` is derived from those values
+  via `spawnDist / pipeSpeed × (1000/60)`. Tuning difficulty without
+  re-running the math will reject legitimate runs or accept impossible
+  ones.
+- **API contract case.** API routes use lowercase difficulty strings
+  (`"easy" | "normal" | "hard" | "insane"`); Prisma uses the uppercase
+  enum. Conversion happens at the boundary via `apiToEnum`/`enumToApi`.
+  Don't mix.
+- **AdSense policy.** The ≥1s game-over interstitial delay and the
+  "Advertisement" label are policy requirements. Plans that drop them
+  to save complexity will get the account flagged.
 
-When advising on porting screens or wiring the engine, look at:
+## Files to keep in context
 
-- `Sky Dodger.html` — entry, ad placement layout, font imports
-- `styles.css` — design tokens (colors, type, spacing, radii, shadows)
-- `engine.js` — game engine + difficulty config (target: port to TS verbatim)
-- `data.js` — `BADGES` array (seed source) and data shapes for `Score`/`User`
-- `components.jsx`, `game-screen.jsx`, `screens.jsx`, `app.jsx` —
-  component layout, copy, ad slot positions
+When advising on iterating screens or the engine:
+
+- `app/sky-dodger.css` — live design tokens (a copy of
+  `legacy/styles.css`)
+- `lib/engine.ts` — typed canvas engine (port of `legacy/engine.js`)
+- `lib/engine-config.ts` — `DIFFICULTY`, `MIN_MS_PER_PIPE`,
+  case-conversion helpers
+- `lib/scores.ts`, `lib/badges.ts`, `lib/anti-cheat.ts`,
+  `lib/rate-limit.ts` — server-side game logic
+- `components/` — all UI components, including `Game.tsx`,
+  `GameScreen.tsx`, `LeaderboardTable.tsx`, `ScoreChart.tsx`,
+  `AvatarHueEditor.tsx`
+- `app/(auth)/`, `app/leaderboards/`, `app/u/[id]/`, `app/play/` —
+  page routes
+- `legacy/` — the original prototype (reference only — don't import)

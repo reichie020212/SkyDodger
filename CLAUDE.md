@@ -2,55 +2,56 @@
 
 ## What this repo is
 
-Sky Dodger is a Flappy-Bird-style web game. The repo currently holds an
-HTML/React prototype (`Sky Dodger.html`, `engine.js`, `data.js`,
-`components.jsx`, `game-screen.jsx`, `screens.jsx`, `app.jsx`,
-`styles.css`). The prototype is the **design and behavior spec** — pixel
-layout, copy, color tokens, and game feel must be matched exactly when
-porting.
+Sky Dodger is a Flappy-Bird-style web game. The production app
+(Next.js 14 App Router + TypeScript + Prisma + NextAuth v5 + Recharts
++ AdSense) is the working tree at the root; the original HTML/React
+prototype lives in [`legacy/`](./legacy/) as the immutable design
+reference.
 
-The build target is a deployable **Next.js 14 (App Router) + TypeScript**
-app on Vercel with a Postgres + Prisma backend, NextAuth.js v5 (Google),
-Recharts, and Google AdSense across 6 placements.
+The eight-phase port specified in
+[`CLAUDE_CODE_PROMPT.md`](./CLAUDE_CODE_PROMPT.md) and
+[`BLUEPRINT.md`](./BLUEPRINT.md) is **complete**. Future work is
+iteration: bug fixes, polish, additional features, performance
+tuning. There is no remaining "phase" backlog to follow.
 
-## The source of truth
+## Where to look first
 
-Read [`CLAUDE_CODE_PROMPT.md`](./CLAUDE_CODE_PROMPT.md) before doing any
-work. It is the full implementation brief — tech stack, project
-structure, Prisma schema, API contracts, anti-cheat rules, AdSense
-policy, environment variables, tests, README requirements, acceptance
-criteria, and the required implementation order:
-
-> Prisma schema + migration → NextAuth → API routes → port engine →
-> port screens → AdSense integration → tests → README
-
-If anything in this file conflicts with `CLAUDE_CODE_PROMPT.md`, the
-prompt wins for project scope; this file wins for workflow.
+| Question | File |
+| --- | --- |
+| How do I run / deploy this? | [`DEPLOY.md`](./DEPLOY.md) |
+| What's the high-level shape? | [`README.md`](./README.md) |
+| What were the original spec + decisions? | [`CLAUDE_CODE_PROMPT.md`](./CLAUDE_CODE_PROMPT.md), [`BLUEPRINT.md`](./BLUEPRINT.md) |
+| What does the prototype look like? | [`legacy/`](./legacy/) — read but don't import |
 
 ## Workflow rules
 
 ### No git worktrees on this project
 Do **not** create a git worktree for work on this repo. Commit directly
 on the active branch (default: `main`) unless Red explicitly says
-otherwise. This overrides the global worktree workflow in `~/.claude/CLAUDE.md`.
+otherwise. This overrides the global worktree workflow in
+`~/.claude/CLAUDE.md`.
 
 ### Don't redesign — port
-Match the prototype 1:1. If you find yourself inventing new layout,
-copy, colors, or features, stop and ask Red. Pause on ambiguity rather
-than improvising — the architect (Gemini) is the one to consult on
-design or schema changes.
+Match the prototype 1:1. The visual language is owned by
+`app/sky-dodger.css` (a copy of `legacy/styles.css`). If you find
+yourself inventing new layout, copy, colors, or features, stop and ask
+Red. On ambiguity, re-consult Gemini via `/ask gemini` rather than
+improvising.
 
 ### Architect / Executor split
-Per Red's global rules, on project work Gemini is the architect and
-Claude is the executor. If the prompt is ambiguous or a roadblock
-requires a design or schema change, re-consult Gemini via `/ask gemini`
-rather than improvising.
+On project work Gemini is the architect, Claude is the executor.
+Schema or visible-design changes go through Gemini first. Pure
+execution (boilerplate, tooling, refactors that don't change behavior)
+doesn't require a re-consult.
 
-### Linting and formatting (once the Next.js project is scaffolded)
-Run the project's formatter/linter before every commit (e.g.
-`pnpm prettier --write`, `pnpm eslint --fix`, `pnpm tsc --noEmit`).
-Don't skip pre-commit hooks. If a hook fails, fix the underlying issue
-and create a new commit — don't `--no-verify` and don't amend.
+### Code quality gates (run before committing)
+- `pnpm tsc --noEmit` — typecheck
+- `pnpm exec next lint` — lint
+- `pnpm exec next build` — full build
+- `pnpm test` — unit tests (23 currently)
+
+If a pre-commit hook fails, fix the underlying issue and create a new
+commit — don't `--no-verify`, don't amend.
 
 ### Git commits
 - Always sign: `git commit -s -S -m "..."`.
@@ -59,21 +60,24 @@ and create a new commit — don't `--no-verify` and don't amend.
 - Do **not** add `Co-Authored-By: Claude` or any "Generated with Claude
   Code" footer. The `Signed-off-by` from `-s` is Red's, not yours.
 
-### Anti-cheat and AdSense policy are real
-- Score-submission rate limit and plausibility checks are not optional —
-  see `CLAUDE_CODE_PROMPT.md` §Anti-cheat.
-- AdSense policy compliance: keep "Advertisement" labels, no ads on the
-  game canvas, and the ≥1s delay before the game-over interstitial is
-  required. Don't quietly drop these.
+### Don't break the load-bearing invariants
+- **Engine config.** `lib/engine-config.ts` `DIFFICULTY` values must
+  match `legacy/engine.js`. The anti-cheat (`lib/anti-cheat.ts`) reads
+  `MIN_MS_PER_PIPE` from there — tuning one without the other will
+  reject legitimate runs or accept impossible ones.
+- **API contract.** The four routes return camelCase keys with
+  lowercase difficulty strings (`"easy" | "normal" | "hard" | "insane"`)
+  even though Prisma uses the uppercase enum internally. Conversion
+  happens at the API boundary via `apiToEnum` / `enumToApi`.
+- **AdSense policy.** The ≥1s game-over interstitial delay
+  (`GameScreen.tsx`'s `interstitialReady` effect) and the
+  "Advertisement" label in `AdSlot.tsx` are policy requirements, not
+  cosmetic. Don't quietly drop them.
 
-## Local files Claude should keep in context
+## Setup tasks vs code tasks
 
-When porting screens or wiring the engine, open these prototype files so
-the output matches:
-
-- `Sky Dodger.html` — entry, ad placement layout, font imports
-- `styles.css` — design tokens (colors, type, spacing, radii, shadows)
-- `engine.js` — game engine + difficulty config (port to TS verbatim)
-- `data.js` — `BADGES` array (seed source) and data shapes for `Score`/`User`
-- `components.jsx`, `game-screen.jsx`, `screens.jsx`, `app.jsx` —
-  component layout, copy, ad slot positions
+When Red asks to "set up the local DB" or "deploy to Vercel," the
+actions live in [`DEPLOY.md`](./DEPLOY.md). You can read the file and
+guide Red through it, but the credentials (Google OAuth client,
+AdSense slot IDs, Vercel Postgres provisioning) live in his accounts —
+don't pretend you can retrieve or generate them yourself.
