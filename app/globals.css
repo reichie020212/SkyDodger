@@ -1,0 +1,8 @@
+/* Next.js globals — kept intentionally thin so the prototype's
+   sky-dodger.css owns the visual language (tokens, typography, layout).
+   Add only resets that the prototype CSS does not already provide. */
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

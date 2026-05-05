@@ -1,0 +1,36 @@
+import type { Metadata } from "next";
+import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import "./sky-dodger.css";
+import "./globals.css";
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-space-grotesk",
+  display: "swap",
+});
+
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: "Sky Dodger — fly, dodge, climb the leaderboard",
+  description:
+    "A Flappy-Bird-style web game with persistent leaderboards, badges, and four difficulty modes.",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en">
+      <body className={`${spaceGrotesk.variable} ${jetBrainsMono.variable}`}>
+        {children}
+      </body>
+    </html>
+  );
+}

@@ -8,17 +8,33 @@
 .vscode/
 .idea/
 
-# Node / Next.js (ahead of scaffolding)
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Next.js
 .next/
 out/
 dist/
 build/
 
+# Coverage / build artifacts
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
 # Env
 .env
 .env.local
 .env.*.local
+
+# Vercel
+.vercel
+
+# Certs
+*.pem
 
 # Logs
 *.log
