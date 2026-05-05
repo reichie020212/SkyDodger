@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Providers } from "@/components/Providers";
 import { TopBar } from "@/components/TopBar";
 import { Footer } from "@/components/Footer";
 import { ADSENSE_CLIENT } from "@/lib/adsense";
@@ -37,11 +38,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${spaceGrotesk.variable} ${jetBrainsMono.variable}`}>
-        <div className="app">
-          <TopBar />
-          <main className="page">{children}</main>
-          <Footer />
-        </div>
+        <Providers>
+          <div className="app">
+            <TopBar />
+            <main className="page">{children}</main>
+            <Footer />
+          </div>
+        </Providers>
         {ADSENSE_CLIENT && (
           <Script
             async
