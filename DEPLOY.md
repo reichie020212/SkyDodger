@@ -85,6 +85,9 @@ POSTGRES_URL_NON_POOLING=postgres://postgres:dev@localhost:5432/skydodger
 AUTH_SECRET=<random-string>
 NEXTAUTH_URL=http://localhost:3000
 
+# Used to resolve absolute URLs for the OG / social card image
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
 # From the Google OAuth setup section below
 AUTH_GOOGLE_ID=<client-id>.apps.googleusercontent.com
 AUTH_GOOGLE_SECRET=<client-secret>
@@ -162,6 +165,7 @@ In **Settings → Environment Variables**, add (Production + Preview):
 ```
 AUTH_SECRET=<openssl rand -base64 32>
 NEXTAUTH_URL=https://yourdomain.com
+NEXT_PUBLIC_SITE_URL=https://yourdomain.com
 AUTH_GOOGLE_ID=<from Google Cloud Console>
 AUTH_GOOGLE_SECRET=<from Google Cloud Console>
 NEXT_PUBLIC_ADSENSE_CLIENT=ca-pub-xxxxxxxxxxxxxxxx
@@ -315,13 +319,14 @@ Verify `NEXT_PUBLIC_ADSENSE_CLIENT` is set in the **Production** env
 in Vercel (not just Preview/Development), then redeploy. Public env
 vars are inlined at build time.
 
-### Recharts adds 100 kB to the dashboard bundle — is that OK?
+### Recharts and bundle size
 
-Yes for now. If you hit the Lighthouse Performance ≥ 90 acceptance
-target, candidate fixes (in order of effort): dynamic-import
-`<ScoreChart>` so it loads only when scrolled into view, swap to a
-lighter chart lib (e.g. `victory-lite`, `nivo` core only), or render
-the chart server-side as static SVG.
+`<ScoreChart>` is already wrapped in `next/dynamic` (see
+`components/ScoreChart.tsx`), so Recharts only loads when a chart is
+viewed. `/dashboard`, `/profile`, and `/u/[id]` are all under 100 kB
+First Load JS. If a future change re-imports Recharts statically and
+the bundle balloons, the fix is the same `dynamic(() => import(...),
+{ ssr: false })` pattern.
 
 ### `prisma migrate deploy` against prod hangs
 

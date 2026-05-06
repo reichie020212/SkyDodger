@@ -10,10 +10,12 @@ judgment calls, and asset generation when needed.
 The original eight-phase port plan (the
 [`BLUEPRINT.md`](./BLUEPRINT.md) you produced) is **complete** —
 scaffold, Prisma, NextAuth, API routes, engine, screens, AdSense,
-tests, README all landed. Future consultations will be about
-iteration: features the prompt didn't cover, performance tuning,
-schema migrations as new requirements emerge, and judgment calls when
-Claude hits ambiguity.
+tests, README all landed. Subsequent polish (Recharts code-split,
+themed 404, OG/favicon, docker-compose for local Postgres, GitHub
+Actions verify pipeline, API-route integration tests, SessionProvider)
+is in too. Future consultations will be about iteration: features the
+prompt didn't cover, performance tuning, schema migrations as new
+requirements emerge, and judgment calls when Claude hits ambiguity.
 
 ## What this repo is
 
@@ -88,8 +90,10 @@ When advising on iterating screens or the engine:
 - `lib/scores.ts`, `lib/badges.ts`, `lib/anti-cheat.ts`,
   `lib/rate-limit.ts` — server-side game logic
 - `components/` — all UI components, including `Game.tsx`,
-  `GameScreen.tsx`, `LeaderboardTable.tsx`, `ScoreChart.tsx`,
-  `AvatarHueEditor.tsx`
+  `GameScreen.tsx`, `LeaderboardTable.tsx`, `AvatarHueEditor.tsx`,
+  and the `ScoreChart.tsx` / `ScoreChartInner.tsx` pair (the outer
+  is a `next/dynamic` wrapper; if you advise tuning the chart, the
+  edit goes in the inner)
 - `app/(auth)/`, `app/leaderboards/`, `app/u/[id]/`, `app/play/` —
   page routes
 - `legacy/` — the original prototype (reference only — don't import)

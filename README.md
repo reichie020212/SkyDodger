@@ -34,7 +34,7 @@ persistence, leaderboards) see [`DEPLOY.md`](./DEPLOY.md).
 | `pnpm build` | Production build (typecheck + lint + bundle) |
 | `pnpm start` | Run the production build |
 | `pnpm lint` | ESLint (Next.js config) |
-| `pnpm test` | Vitest one-shot (23 tests) |
+| `pnpm test` | Vitest one-shot (30 tests) |
 | `pnpm test:watch` | Vitest watch mode |
 | `pnpm db:generate` | Regenerate the Prisma client |
 | `pnpm db:migrate` | Run / create migrations against the dev database |
@@ -61,6 +61,17 @@ persistence, leaderboards) see [`DEPLOY.md`](./DEPLOY.md).
 - `lib/adsense.ts` + `components/AdSlot.tsx` — kind → format/dimensions
   table, real `<ins class="adsbygoogle">` rendering when env is
   configured, labeled placeholder fallback otherwise.
+- `components/ScoreChart.tsx` — `next/dynamic` wrapper around
+  `ScoreChartInner.tsx` so Recharts (~100 kB) loads only when a chart
+  is viewed, keeping `/dashboard`, `/profile`, and `/u/[id]` under
+  100 kB First Load JS.
+- `app/not-found.tsx`, `app/icon.tsx`, `app/opengraph-image.tsx` —
+  themed 404, 32×32 favicon, and 1200×630 social card, generated via
+  `next/og` `ImageResponse`.
+- `docker-compose.yml` — local Postgres 16 with a persistent named
+  volume, used by `docker compose up -d` (see `DEPLOY.md`).
+- `.github/workflows/ci.yml` — runs lint + typecheck + test + build
+  on every push to `main` and every PR.
 
 ## Routes
 
@@ -80,12 +91,13 @@ persistence, leaderboards) see [`DEPLOY.md`](./DEPLOY.md).
 
 ## Tests
 
-`pnpm test` runs 23 unit tests across:
+`pnpm test` runs 30 tests — 23 unit + 7 API-route integration:
 
 - `lib/anti-cheat.test.ts` — score/duration plausibility boundaries
 - `lib/scores.test.ts` — `getPeriodStart` for each window
 - `lib/badges.test.ts` — `computeConsecutiveDays` (streak math)
 - `lib/rate-limit.test.ts` — cooldown gating with fake timers
-
-Prisma-mocking integration tests for the API routes are deferred
-(meaningful logic is covered by the units above).
+- `app/api/scores/route.test.ts` — auth gate, Zod validation,
+  anti-cheat rejection, case conversion, 201 success shape, 429
+  Retry-After, per-user rate isolation. `vi.mock`'s `auth`,
+  `prisma`, and `badges` so it runs without a DB.

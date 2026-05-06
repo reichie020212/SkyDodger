@@ -48,10 +48,12 @@ doesn't require a re-consult.
 - `pnpm tsc --noEmit` — typecheck
 - `pnpm exec next lint` — lint
 - `pnpm exec next build` — full build
-- `pnpm test` — unit tests (23 currently)
+- `pnpm test` — vitest (30 currently: 23 unit + 7 API route integration)
 
-If a pre-commit hook fails, fix the underlying issue and create a new
-commit — don't `--no-verify`, don't amend.
+The same four run in `.github/workflows/ci.yml` on every push to
+`main` and every PR — a green local run is expected to translate to a
+green CI run. If a pre-commit hook fails, fix the underlying issue
+and create a new commit — don't `--no-verify`, don't amend.
 
 ### Git commits
 - Always sign: `git commit -s -S -m "..."`.
